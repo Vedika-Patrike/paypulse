@@ -8,60 +8,59 @@
 
 ## 🎯 1. Executive Summary & Goal
 
-ACME Org currently manages salary data for **10,000 employees across 8 global countries** using fragmented Excel spreadsheets. This process is error-prone, slow, and makes answering executive queries regarding organizational pay parity, compensation distribution, and equity compliance extremely tedious.
+ACME Org manages compensation data for **10,000 employees across 8 global regions** (US, UK, Germany, India, Japan, Canada, Australia, France). Operating across fragmented spreadsheets makes answering executive queries regarding organizational pay equity, compensation distribution, and budget adjustments slow and error-prone.
 
-**Goal:** Deliver a modern, web-based salary management & compensation intelligence platform (**ACME PayPulse**) enabling HR leaders to seamlessly manage 10,000 employee records, gain instant multi-country pay insights, analyze gender pay equity, and simulate salary adjustment budgets in real time with zero setup overhead.
+**Goal:** Deliver a high-performance, web-based compensation intelligence platform (**ACME PayPulse**) enabling HR leaders to manage 10,000 employee records with rock-solid CRUD performance, analyze multi-currency salary distributions (P10, P50/Median, P90), evaluate pay equity, and model compensation budget adjustments in real time with zero setup overhead.
 
 ---
 
-## 🔍 2. User Persona & Use Cases
+## 👤 2. Primary User Persona & Role-Based Visibility
 
 * **Primary Persona:** HR Manager (Sarah Vance)
-  * **Pain Points:** 
-    * Opening 50+ MB Excel sheets crashes laptop; searching for individual records is sluggish.
-    * Calculating median salary or P90 percentile by department across converted local currencies takes hours.
-    * Executive board asks: *"What is our gender pay gap in Engineering across US vs. Germany?"* — Excel requires manual pivot tables each time.
-    * Simulating a 4.5% cost-of-living raise for specific departments requires duplicating formulas and risk breaking cell references.
+  * **Core Goals:** Fast employee lookup, rock-solid CRUD workflows, and instant statistical salary distribution breakdowns across departments and countries.
+  * **Pain Points:** Searching across 10,000 records in Excel is sluggish; computing median (P50) and P90 percentiles across multi-currency locations requires tedious manual pivot tables.
+
+* **Lightweight Header Persona Switcher:**
+  * Rather than adding a complex, time-consuming login/auth system, the UI features a lightweight header toggle (`HR Manager`, `Comp Director`, `Dept Lead`).
+  * **Purpose:** Demonstrates role-based visibility thinking with zero setup overhead for reviewers.
 
 ---
 
-## ✨ 3. Functional Scope & Key Features
+## ✨ 3. Feature Scope & Architecture Prioritization
 
-### Feature 1: High-Performance 10,000 Employee Directory
-* Instant paginated list (50 records/page) over 10,000 employee records with sub-50ms search by Name, Employee Code, or Email.
-* Multi-criteria filtering by Department (Engineering, Sales, Product, HR, Marketing, Finance, Operations, Legal), Country (US, UK, Germany, India, Japan, Canada, Australia, France), Gender, and Performance Rating.
-* Full CRUD (Add, Edit, Delete, View Detail) with real-time UI validation.
-* One-click CSV export of filtered or full salary datasets.
+### Core Features (High Priority — Primary MVP)
+1. **Rock-Solid 10,000 Employee Directory & CRUD**:
+   * Database-indexed pagination (50 records/page) over 10,000 employee records with sub-50ms search by Name, Employee Code, or Email.
+   * Multi-criteria filtering by Department, Country, Gender, and Performance Rating.
+   * Full CRUD (Add, Edit, Delete, View Detail) with real-time UI validation and H2 database persistence.
+2. **Salary Distribution & Percentiles (P10, P50/Median, P90)**:
+   * Direct answer to *"how the org pays people"* by computing Median (P50), P10, P25, P75, and P90 percentile spectrums alongside department and role averages.
+3. **Multi-Currency Normalization**:
+   * Native storage of local currencies (`local_salary`, `currency`) alongside normalized common reporting currency (`salaryusd`) using a seeded FX rate conversion table (USD base, GBP 0.78, EUR 0.92, INR 83.5, JPY 155.0, CAD 1.36, AUD 1.50).
+4. **Primary Executive Dashboard & Telemetry**:
+   * High-level KPI cards: Total Global Payroll (USD), Average Salary, Median Salary (P50), Top Department by Budget, Gender Parity Ratio.
 
-### Feature 2: Executive HR Dashboard & Telemetry
-* Live KPI metrics: Total Global Payroll (USD), Average Salary, Median Salary (P50), Top Department by Budget, Gender Parity Ratio.
-* Interactive distribution charts for payroll allocation across departments and countries.
-
-### Feature 3: Deep Compensation Analytics & Pay Parity
-* **Percentile Spectrum**: Calculates P10, P25, P50 (Median), P75, and P90 compensation tiers by role & department.
-* **Gender Pay Gap Analysis**: Automatically computes raw and department-adjusted pay gaps between genders with visual variance charts.
-* **Multi-Currency Normalization**: Toggle between USD normalized amounts and local currencies (USD, EUR, GBP, INR, JPY, CAD, AUD) with real-time exchange conversion.
-
-### Feature 4: Interactive "What-If" Compensation Simulator
-* HR Managers can model prospective salary adjustments (e.g. `+4.5%` raise for Engineering or `+$3,000` flat adjustment for high performers).
-* Previews immediate delta in total annual payroll budget and visualizes before-vs-after departmental distribution before committing.
+### Stretch Features (Secondary — Built on Rock-Solid Core)
+1. **Pay Equity Analytics**: Gender pay variance breakdown across departments (male vs. female average & median salaries).
+2. **"What-If" Compensation Scenario Simulator**: Interactive merit raise & flat bonus planner with real-time net budget impact previews.
 
 ---
 
-## 🚫 4. Deliberately Left Out (Scope Boundaries & Trade-Offs)
+## 📊 4. Data Model Assumptions & Intentional Trade-Offs
 
-| Out-of-Scope Feature | Reasoning & Engineering Trade-Off |
+| Decision / Trade-Off | Rationale & Architectural Assumption |
 | :--- | :--- |
-| **Real-Time Bank Transfers & Direct Deposit Integration** | Focus is strictly on *compensation intelligence & HR decision-making*. Payment execution belongs in a separate banking integration gateway. |
-| **Multi-Tenant SSO / OAuth2 Identity Provider** | Implemented a light role-switcher (HR Executive, Comp Director, Department Lead) for instantaneous reviewer testing without forcing auth token setup or external OAuth callback configuration. |
-| **External Distributed Database (e.g. Postgres Cluster)** | Choice of Spring Boot embedded H2 database (file/memory mode) allows **zero-setup execution**. Evaluators can execute `java -jar paypulse-backend.jar` without Docker or external DB instances. |
-| **Complex Microservice Architecture** | A modular monolith with clear domain separation (Controller, Service, Repository, DTO, Entity) avoids unnecessary network latency and deployment complexity while maintaining clean architecture. |
+| **Dual Currency Storage (`local_salary` + `salaryusd`)** | Stores native currency and pre-calculates USD reporting amount at write/seed time. Enables sub-millisecond aggregate telemetry without runtime conversion overhead. |
+| **Embedded H2 In-Memory Database** | Ensures **zero-setup execution** for reviewers. Spring Boot automatically seeds 10,000 records on startup without requiring local PostgreSQL/MySQL setup. |
+| **High-Performance Batch Seeding (`JdbcTemplate`)** | Uses JDBC batch execution (`DataSeeder.java`) to insert 10,000 employee records in **< 3.0 seconds** on startup. |
+| **Header Persona Switcher vs. OAuth2 SSO** | Implemented a header toggle (`HR Manager`, `Comp Director`, `Dept Lead`) to showcase role-based visibility thinking without forcing reviewers through login screens or OAuth setup. |
+| **Modular Monolith Layout** | Keeps backend Spring Boot API and React SPA single-jar deployable for zero-friction evaluation. |
 
 ---
 
-## ⚙️ 5. Non-Functional Requirements & Performance SLAs
+## ⚙️ 5. Non-Functional Performance SLAs
 
-1. **Initial Seed Time**: 10,000 records seeded into H2 DB in **< 2.0 seconds** on cold startup.
-2. **Search API Latency**: Filter & paginated query response time **< 50 ms**.
-3. **UI Responsiveness**: Instant UI rendering using React 18 & Virtualized/Paginated tables.
-4. **Test Quality**: Automated unit & integration test suite covering core percentile calculations, pay gap algorithms, and REST endpoints.
+1. **Initial Batch Seed Time**: 10,000 records seeded into H2 DB in **< 3.0 seconds** on startup.
+2. **Search & Pagination Latency**: Filtered query response time **< 50 ms**.
+3. **Statistical Analytics Query Time**: P10–P90 percentile computation **< 100 ms** across 10k records.
+4. **Automated Test Quality**: 100% pass rate on JUnit 5 integration and service unit test suite (`mvn test`).
