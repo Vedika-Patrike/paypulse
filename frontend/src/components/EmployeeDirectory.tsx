@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Employee, PageResponse } from '../types';
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '../services/api';
 import {
@@ -411,9 +412,9 @@ export const EmployeeDirectory: React.FC<EmployeeDirectoryProps> = ({
       </div>
 
       {/* Add / Edit Employee Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="glass-panel w-full max-w-lg p-6 space-y-5 border border-slate-700/80 shadow-2xl">
+      {showModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-5 border border-slate-700/80 shadow-2xl my-auto">
             
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">
@@ -575,7 +576,8 @@ export const EmployeeDirectory: React.FC<EmployeeDirectoryProps> = ({
 
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
