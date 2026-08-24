@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Users, Shield, RefreshCw, Sparkles, Building2 } from 'lucide-react';
+import { Activity, Users, Shield, RefreshCw, Sparkles } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
@@ -21,35 +21,35 @@ export const Header: React.FC<HeaderProps> = ({
   isReseeding,
 }) => {
   return (
-    <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/80 shadow-2xl">
+    <header className="sticky top-0 z-50 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/80 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between py-3 lg:h-20 gap-4">
           
           {/* Logo & Branding */}
-          <div className="flex items-center space-x-4">
-            <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/20">
+          <div className="flex items-center space-x-3 shrink-0">
+            <div className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/25 shrink-0">
               <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <Activity className="w-6 h-6 text-indigo-400 animate-pulse" />
+                <Activity className="w-5 h-5 text-indigo-400 animate-pulse" />
               </div>
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                  <span>ACME PayPulse</span>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white whitespace-nowrap">
+                  ACME PayPulse
                 </h1>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 whitespace-nowrap">
                   <Sparkles className="w-3 h-3 mr-1 text-indigo-400" />
                   Enterprise 10k
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-medium">
-                Global Compensation & Salary Intelligence Engine
+              <p className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+                Global Compensation &amp; Salary Intelligence Engine
               </p>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="hidden md:flex items-center space-x-1 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800">
+          <nav className="flex items-center space-x-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800/90 overflow-x-auto scrollbar-none">
             {[
               { id: 'overview', label: 'Dashboard Overview' },
               { id: 'directory', label: '10k Employee Directory' },
@@ -59,10 +59,10 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 border border-indigo-400/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
                 {tab.label}
@@ -71,9 +71,10 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Persona Switcher & Reseed Controls */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2.5 shrink-0">
+            
             {/* Live Count Badge */}
-            <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs font-medium text-slate-300">
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 whitespace-nowrap">
               <Users className="w-3.5 h-3.5 text-indigo-400" />
               <span>
                 <strong className="text-white font-bold">{totalEmployees.toLocaleString()}</strong> Records
@@ -81,12 +82,12 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Persona Switcher */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
+            <div className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs whitespace-nowrap">
               <Shield className="w-3.5 h-3.5 text-purple-400" />
               <select
                 value={persona}
                 onChange={(e) => setPersona(e.target.value)}
-                className="bg-transparent text-slate-200 font-semibold focus:outline-none cursor-pointer"
+                className="bg-transparent text-slate-200 font-semibold focus:outline-none cursor-pointer text-xs"
               >
                 <option value="HR Manager" className="bg-slate-900 text-slate-100">Persona: HR Manager</option>
                 <option value="Comp Director" className="bg-slate-900 text-slate-100">Persona: Comp Director</option>
@@ -99,34 +100,14 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onReseed}
               disabled={isReseeding}
               title="Reseed database with 10,000 fresh records"
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all duration-200 disabled:opacity-50"
+              className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all duration-200 disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isReseeding ? 'animate-spin text-indigo-400' : ''}`} />
             </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Mobile Nav Bar */}
-      <div className="md:hidden flex border-t border-slate-800 bg-slate-950/90 overflow-x-auto px-4 py-2 space-x-2 scrollbar-none">
-        {[
-          { id: 'overview', label: 'Overview' },
-          { id: 'directory', label: 'Directory' },
-          { id: 'analytics', label: 'Analytics' },
-          { id: 'simulator', label: 'Simulator' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap ${
-              activeTab === tab.id
-                ? 'bg-indigo-600 text-white'
-                : 'text-slate-400 hover:text-white bg-slate-900'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+          </div>
+
+        </div>
       </div>
     </header>
   );

@@ -6,7 +6,7 @@ import { SalaryAnalytics } from './components/SalaryAnalytics';
 import { CompensationSimulator } from './components/CompensationSimulator';
 import { AnalyticsSummary } from './types';
 import { getAnalyticsSummary, getDepartments, getCountries, reseedDatabase } from './services/api';
-import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -15,6 +15,7 @@ export const App: React.FC = () => {
   const [departments, setDepartments] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
   const [loadingSummary, setLoadingSummary] = useState<boolean>(true);
+  const [errorSummary, setErrorSummary] = useState<string | null>(null);
   const [isReseeding, setIsReseeding] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -25,6 +26,7 @@ export const App: React.FC = () => {
 
   const fetchMetaAndSummary = async () => {
     setLoadingSummary(true);
+    setErrorSummary(null);
     try {
       const [sumRes, deptRes, countryRes] = await Promise.all([
         getAnalyticsSummary(),
@@ -34,8 +36,9 @@ export const App: React.FC = () => {
       setSummary(sumRes);
       setDepartments(deptRes);
       setCountries(countryRes);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load initial metadata', err);
+      setErrorSummary('Unable to connect to ACME PayPulse backend API. Please verify port 8085 is running.');
     } finally {
       setLoadingSummary(false);
     }
@@ -87,24 +90,43 @@ export const App: React.FC = () => {
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {activeTab === 'overview' && (
-          <OverviewDashboard summary={summary} loading={loadingSummary} />
-        )}
+        {errorSummary ? (
+          <div className="glass-panel p-8 max-w-lg mx-auto text-center space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Backend Connection Issue</h3>
+            <p className="text-xs text-slate-400">{errorSummary}</p>
+            <button
+              onClick={fetchMetaAndSummary}
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-500/20"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry Telemetry Connection</span>
+            </button>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'overview' && (
+              <OverviewDashboard summary={summary} loading={loadingSummary} />
+            )}
 
-        {activeTab === 'directory' && (
-          <EmployeeDirectory
-            departments={departments}
-            countries={countries}
-            onRefreshSummary={fetchMetaAndSummary}
-          />
-        )}
+            {activeTab === 'directory' && (
+              <EmployeeDirectory
+                departments={departments}
+                countries={countries}
+                onRefreshSummary={fetchMetaAndSummary}
+              />
+            )}
 
-        {activeTab === 'analytics' && (
-          <SalaryAnalytics departments={departments} countries={countries} />
-        )}
+            {activeTab === 'analytics' && (
+              <SalaryAnalytics departments={departments} countries={countries} />
+            )}
 
-        {activeTab === 'simulator' && (
-          <CompensationSimulator departments={departments} countries={countries} />
+            {activeTab === 'simulator' && (
+              <CompensationSimulator departments={departments} countries={countries} />
+            )}
+          </>
         )}
 
       </main>
