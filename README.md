@@ -21,7 +21,7 @@
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 🛠️ Tech Stack & Prerequisites
 
 | Layer | Technology |
 | :--- | :--- |
@@ -30,7 +30,66 @@
 | **Frontend UI** | React 18 + TypeScript + Vite |
 | **Styling & Icons** | Tailwind CSS + Lucide Icons |
 | **Data Visualizations** | Recharts Data Visualization Engine |
-| **Build & Packaging** | Maven (Backend) + pnpm/Vite (Frontend) |
+| **Build Tools** | Maven (Backend) + pnpm/Vite (Frontend) |
+
+> **Prerequisites for running on another user's machine:**
+> - **Java 21** (or Java 17+)
+> - **Git**
+
+---
+
+## 🚀 Quick Start Guide (How to Clone & Run)
+
+### 1. Clone the Repository
+Open a terminal and clone the repository onto your machine:
+```bash
+git clone https://github.com/Vedika-Patrike/paypulse.git
+cd paypulse
+```
+
+---
+
+### 2. Run the Application (Zero Setup Required)
+
+You can run the backend and embedded frontend using **Maven** or the **Single Executable JAR**:
+
+#### Option A: Run via Maven (Recommended for Quick Execution)
+```bash
+cd backend
+mvn spring-boot:run
+```
+- **Automatically seeds 10,000 employee records** into the in-memory H2 database on startup (< 3 seconds).
+- Open **`http://localhost:8085`** in your browser to access the complete application!
+- H2 Web Console: **`http://localhost:8085/h2-console`** (JDBC URL: `jdbc:h2:mem:paypulsedb`, User: `sa`, Password: *empty*).
+
+---
+
+#### Option B: Build and Run Standalone JAR
+```bash
+# From the root directory:
+cd backend
+mvn package -DskipTests
+java -jar target/paypulse-app.jar
+```
+- Open **`http://localhost:8085`** in your browser.
+
+---
+
+### 3. Local Development Setup (Optional for Developers)
+
+If you wish to modify the React frontend with hot-reloading:
+
+```bash
+# Terminal 1: Run Spring Boot Backend (Port 8085)
+cd backend
+mvn spring-boot:run
+
+# Terminal 2: Run React Frontend Dev Server (Port 5173)
+cd frontend
+pnpm install
+pnpm run dev
+```
+- Open **`http://localhost:5173`** for Vite hot-reloading dev server.
 
 ---
 
@@ -54,41 +113,6 @@ paypulse/
 │   └── PERFORMANCE.md        # Seeding & query performance benchmarks
 └── README.md                 # Project Overview & Quick Start Guide
 ```
-
----
-
-## 🚀 Quick Start Guide
-
-### Option 1: Run the Standalone Single JAR (Zero Setup)
-
-The single executable JAR serves both the REST API backend and the embedded React frontend:
-
-```bash
-# Run the executable JAR on Port 8085
-java -jar backend/target/paypulse-app.jar
-```
-
-Open your browser at: **`http://localhost:8085`**  
-H2 Web Console: **`http://localhost:8085/h2-console`** (JDBC URL: `jdbc:h2:mem:paypulsedb`, User: `sa`, Password: *empty*)
-
----
-
-### Option 2: Local Development Setup
-
-#### 1. Backend (Spring Boot)
-```bash
-cd backend
-mvn spring-boot:run
-```
-*Backend runs on `http://localhost:8085`.*
-
-#### 2. Frontend (React + Vite)
-```bash
-cd frontend
-pnpm install
-pnpm run dev
-```
-*Frontend runs on `http://localhost:5173`.*
 
 ---
 
