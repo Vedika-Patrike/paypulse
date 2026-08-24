@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,23 @@ public class EmployeeServiceImpl implements EmployeeService {
         return mapToDto(employee);
     }
 
+    private record CurrencyFx(String currency, double rate) {}
+
+    private CurrencyFx getCurrencyAndFxForCountry(String country) {
+        if (country == null) return new CurrencyFx("USD", 1.0);
+        return switch (country.trim()) {
+            case "United Kingdom" -> new CurrencyFx("GBP", 0.78);
+            case "Germany", "France" -> new CurrencyFx("EUR", 0.92);
+            case "India" -> new CurrencyFx("INR", 83.50);
+            case "Japan" -> new CurrencyFx("JPY", 155.00);
+            case "Canada" -> new CurrencyFx("CAD", 1.36);
+            case "Australia" -> new CurrencyFx("AUD", 1.50);
+            default -> new CurrencyFx("USD", 1.0);
+        };
+    }
+
     @Override
+    @Transactional
     public EmployeeDto createEmployee(EmployeeDto dto) {
         if (employeeRepository.existsByEmployeeCode(dto.employeeCode())) {
             throw new IllegalArgumentException("Employee code already exists: " + dto.employeeCode());
@@ -64,21 +81,33 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDepartment(dto.department());
         employee.setJobTitle(dto.jobTitle());
         employee.setCountry(dto.country());
-        employee.setSalaryUSD(dto.salaryUSD());
-        employee.setLocalSalary(dto.localSalary() != null ? dto.localSalary() : dto.salaryUSD());
-        employee.setCurrency(dto.currency() != null ? dto.currency() : "USD");
-        employee.setGender(dto.gender());
-        employee.setHireDate(dto.hireDate());
-        employee.setPerformanceRating(dto.performanceRating());
+        
+        BigDecimal salaryUSD = dto.salaryUSD() != null ? dto.salaryUSD() : BigDecimal.valueOf(100000);
+        employee.setSalaryUSD(salaryUSD);
+
+        CurrencyFx fx = getCurrencyAndFxForCountry(dto.country());
+        employee.setCurrency(dto.currency() != null ? dto.currency() : fx.currency());
+        
+        BigDecimal localSalary = dto.localSalary() != null ? dto.localSalary() : salaryUSD.multiply(BigDecimal.valueOf(fx.rate())).setScale(2, RoundingMode.HALF_UP);
+        employee.setLocalSalary(localSalary);
+
+        employee.setGender(dto.gender() != null ? dto.gender() : "Female");
+        employee.setHireDate(dto.hireDate() != null ? dto.hireDate() : LocalDate.now());
+        employee.setPerformanceRating(dto.performanceRating() != null ? dto.performanceRating() : 4.0);
 
         Employee saved = employeeRepository.save(employee);
         return mapToDto(saved);
     }
 
     @Override
+    @Transactional
     public EmployeeDto updateEmployee(Long id, EmployeeDto dto) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found with id: " + id));
+
+        if (!employee.getEmail().equalsIgnoreCase(dto.email()) && employeeRepository.existsByEmail(dto.email())) {
+            throw new IllegalArgumentException("Email already in use by another employee: " + dto.email());
+        }
 
         employee.setFirstName(dto.firstName());
         employee.setLastName(dto.lastName());
@@ -86,12 +115,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDepartment(dto.department());
         employee.setJobTitle(dto.jobTitle());
         employee.setCountry(dto.country());
-        employee.setSalaryUSD(dto.salaryUSD());
-        employee.setLocalSalary(dto.localSalary());
-        employee.setCurrency(dto.currency());
-        employee.setGender(dto.gender());
-        employee.setHireDate(dto.hireDate());
-        employee.setPerformanceRating(dto.performanceRating());
+        
+        BigDecimal salaryUSD = dto.salaryUSD() != null ? dto.salaryUSD() : employee.getSalaryUSD();
+        employee.setSalaryUSD(salaryUSD);
+
+        CurrencyFx fx = getCurrencyAndFxForCountry(dto.country());
+        employee.setCurrency(dto.currency() != null ? dto.currency() : fx.currency());
+        
+        BigDecimal localSalary = dto.localSalary() != null ? dto.localSalary() : salaryUSD.multiply(BigDecimal.valueOf(fx.rate())).setScale(2, RoundingMode.HALF_UP);
+        employee.setLocalSalary(localSalary);
+
+        employee.setGender(dto.gender() != null ? dto.gender() : employee.getGender());
+        employee.setHireDate(dto.hireDate() != null ? dto.hireDate() : (employee.getHireDate() != null ? employee.getHireDate() : LocalDate.now()));
+        employee.setPerformanceRating(dto.performanceRating() != null ? dto.performanceRating() : employee.getPerformanceRating());
 
         Employee updated = employeeRepository.save(employee);
         return mapToDto(updated);
